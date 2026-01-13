@@ -103,7 +103,7 @@ export function ExportPanel() {
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-4">
+    <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-4 flex-shrink-0">
       <h2 className="text-lg font-bold text-gray-100 mb-4">輸出設定</h2>
 
       {/* 輸出設定 */}

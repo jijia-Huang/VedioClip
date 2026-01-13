@@ -18,7 +18,7 @@ function App() {
         </div>
 
         {/* 右側片段管理區域（30-35%） */}
-        <div className="flex-[0.33] p-4 flex flex-col gap-4 min-w-0 border-l border-gray-700 bg-gray-800">
+        <div className="flex-[0.33] p-4 flex flex-col gap-4 min-w-0 border-l border-gray-700 bg-gray-800 overflow-y-auto">
           <ClipList />
           <ExportPanel />
         </div>

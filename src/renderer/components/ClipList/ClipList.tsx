@@ -28,7 +28,7 @@ export function ClipList() {
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-4 h-full flex flex-col">
+    <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-4 flex flex-col flex-shrink-0">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-gray-100">剪輯片段</h2>
         <button
@@ -54,14 +54,14 @@ export function ClipList() {
 
       {/* 片段列表表格 */}
       {segments.length === 0 ? (
-        <div className="text-center py-8 text-gray-400 flex-1 flex items-center justify-center">
+        <div className="text-center py-8 text-gray-400 flex items-center justify-center min-h-[200px]">
           <div>
             <p>目前沒有片段</p>
             <p className="text-sm mt-2">點擊「新增片段」按鈕開始建立片段</p>
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-auto">
+        <div className="overflow-auto max-h-[60vh]">
           <table className="w-full text-sm">
             <thead className="bg-gray-700 sticky top-0">
               <tr>

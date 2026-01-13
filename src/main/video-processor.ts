@@ -1,8 +1,9 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync } from 'fs';
-import { dirname, extname } from 'path';
+import { dirname, extname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
+import { app } from 'electron';
 import { VideoInfo, ExportFormat, ExportQuality } from '../shared/types';
 
 /**
@@ -18,22 +19,45 @@ if (typeof globalThis.__dirname === 'undefined') {
 }
 
 // 設定 FFmpeg 和 FFprobe 路徑
-try {
-  const require = createRequire(import.meta.url);
+function setupFFmpegPaths() {
+  let ffmpegPath: string;
+  let ffprobePath: string;
   
-  // 設定 ffmpeg 路徑
-  const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
-  ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+  if (app.isPackaged) {
+    // 打包後的路徑：從 resources 目錄讀取
+    const resourcesPath = process.resourcesPath || app.getAppPath();
+    ffmpegPath = join(resourcesPath, 'resources', 'ffmpeg.exe');
+    ffprobePath = join(resourcesPath, 'resources', 'ffprobe.exe');
+  } else {
+    // 開發模式：使用 node_modules 中的安裝器
+    try {
+      const require = createRequire(import.meta.url);
+      const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+      const ffprobeInstaller = require('@ffprobe-installer/ffprobe');
+      ffmpegPath = ffmpegInstaller.path;
+      ffprobePath = ffprobeInstaller.path;
+    } catch (error) {
+      console.warn('無法載入 FFmpeg/FFprobe 安裝器:', error);
+      // 回退到系統安裝的版本
+      ffmpegPath = 'ffmpeg';
+      ffprobePath = 'ffprobe';
+    }
+  }
   
-  // 設定 ffprobe 路徑（使用 @ffprobe-installer/ffprobe）
-  const ffprobeInstaller = require('@ffprobe-installer/ffprobe');
-  ffmpeg.setFfprobePath(ffprobeInstaller.path);
+  ffmpeg.setFfmpegPath(ffmpegPath);
+  ffmpeg.setFfprobePath(ffprobePath);
   
-  console.log('FFmpeg 路徑:', ffmpegInstaller.path);
-  console.log('FFprobe 路徑:', ffprobeInstaller.path);
-} catch (error) {
-  // 如果安裝器不可用，使用系統安裝的 FFmpeg
-  console.warn('無法載入 FFmpeg/FFprobe 安裝器，使用系統安裝的版本:', error);
+  console.log('FFmpeg 路徑:', ffmpegPath);
+  console.log('FFprobe 路徑:', ffprobePath);
+}
+
+// 在 app ready 後初始化（在 main.ts 中調用）
+export function initializeFFmpeg() {
+  try {
+    setupFFmpegPaths();
+  } catch (error) {
+    console.warn('設定 FFmpeg 路徑時發生錯誤:', error);
+  }
 }
 
 /**

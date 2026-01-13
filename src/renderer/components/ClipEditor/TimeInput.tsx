@@ -147,15 +147,15 @@ export function TimeInput({ value, onChange, label, maxSeconds }: TimeInputProps
       <label className="block text-sm font-medium text-gray-300 mb-2">
         {label}
       </label>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         {/* 分鐘（只在需要時顯示） */}
         {showMinutes && (
           <>
-            <div className="flex items-center gap-1 border border-gray-600 rounded-md overflow-hidden bg-gray-700">
+            <div className="flex items-center border border-gray-600 rounded-md bg-gray-700 overflow-visible">
               <button
                 type="button"
                 onClick={() => handleDecrement('minutes')}
-                className="px-2 py-1 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold"
+                className="px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold flex-shrink-0 min-w-[36px] text-center"
               >
                 −
               </button>
@@ -165,26 +165,26 @@ export function TimeInput({ value, onChange, label, maxSeconds }: TimeInputProps
                 onChange={(e) => handleInputChange('minutes', e.target.value)}
                 min="0"
                 max="999"
-                className="w-16 px-2 py-1 text-center border-0 bg-gray-700 text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-16 px-2 py-1.5 text-center border-0 bg-gray-700 text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
               <button
                 type="button"
                 onClick={() => handleIncrement('minutes')}
-                className="px-2 py-1 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold"
+                className="px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold flex-shrink-0 min-w-[36px] text-center relative z-10"
               >
                 +
               </button>
             </div>
-            <span className="text-gray-400 font-medium">分</span>
+            <span className="text-gray-400 font-medium flex-shrink-0">分</span>
           </>
         )}
 
         {/* 秒 */}
-        <div className="flex items-center gap-1 border border-gray-600 rounded-md overflow-hidden bg-gray-700">
+        <div className="flex items-center border border-gray-600 rounded-md bg-gray-700 overflow-visible">
           <button
             type="button"
             onClick={() => handleDecrement('seconds')}
-            className="px-2 py-1 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold"
+            className="px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold flex-shrink-0 min-w-[36px] text-center"
           >
             −
           </button>
@@ -194,24 +194,24 @@ export function TimeInput({ value, onChange, label, maxSeconds }: TimeInputProps
             onChange={(e) => handleInputChange('seconds', e.target.value)}
             min="0"
             max={showMinutes ? "59" : "999"}
-            className="w-16 px-2 py-1 text-center border-0 bg-gray-700 text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-16 px-2 py-1.5 text-center border-0 bg-gray-700 text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           <button
             type="button"
             onClick={() => handleIncrement('seconds')}
-            className="px-2 py-1 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold"
+            className="px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold flex-shrink-0 min-w-[36px] text-center relative z-10"
           >
             +
           </button>
         </div>
-        <span className="text-gray-400 font-medium">秒</span>
+        <span className="text-gray-400 font-medium flex-shrink-0">秒</span>
 
         {/* 毫秒（以 0.01 秒為單位，顯示為兩位數） */}
-        <div className="flex items-center gap-1 border border-gray-600 rounded-md overflow-hidden bg-gray-700">
+        <div className="flex items-center border border-gray-600 rounded-md bg-gray-700 overflow-visible">
           <button
             type="button"
             onClick={() => handleDecrement('centiseconds')}
-            className="px-2 py-1 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold"
+            className="px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold flex-shrink-0 min-w-[36px] text-center"
           >
             −
           </button>
@@ -221,17 +221,17 @@ export function TimeInput({ value, onChange, label, maxSeconds }: TimeInputProps
             onChange={(e) => handleInputChange('centiseconds', e.target.value)}
             min="0"
             max="99"
-            className="w-16 px-2 py-1 text-center border-0 bg-gray-700 text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-16 px-2 py-1.5 text-center border-0 bg-gray-700 text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           <button
             type="button"
             onClick={() => handleIncrement('centiseconds')}
-            className="px-2 py-1 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold"
+            className="px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-gray-200 font-bold flex-shrink-0 min-w-[36px] text-center relative z-10"
           >
             +
           </button>
         </div>
-        <span className="text-gray-400 font-medium">毫秒</span>
+        <span className="text-gray-400 font-medium flex-shrink-0">毫秒</span>
       </div>
     </div>
   );
