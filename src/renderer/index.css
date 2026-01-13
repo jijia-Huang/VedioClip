@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 自訂進度條樣式 */
+.progress-bar-container {
+  position: relative;
+}
+
+.progress-bar-container .custom-range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.progress-bar-container .custom-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.progress-bar-container .custom-range-input::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.progress-bar-container .custom-range-input::-webkit-slider-thumb:active {
+  transform: scale(1.3);
+}
+
+.progress-bar-container .custom-range-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.progress-bar-container .custom-range-input::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+.progress-bar-container .custom-range-input::-moz-range-thumb:active {
+  transform: scale(1.3);
+}
