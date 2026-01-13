@@ -8,8 +8,6 @@
 - 頂部：標題列（Logo/標題、載入影片按鈕、設定、幫助）
 - 底部：狀態列
 - 優化片段列表為表格形式（顯示編號、名稱、開始時間、結束時間、操作）
-- 實作「加入目前片段」功能（使用播放器的當前時間作為入點/出點）
-- 實作入點/出點按鈕（I/O 按鈕）快速標記時間點
 - 優化響應式設計，確保在不同視窗大小下都能良好顯示
 
 ## Impact
@@ -22,5 +20,4 @@
   - `src/renderer/components/VideoLoader/VideoLoader.tsx` (移到頂部標題列)
   - `src/renderer/components/Header/` (新增，頂部標題列)
   - `src/renderer/components/StatusBar/` (新增，底部狀態列)
-  - `src/renderer/stores/clipStore.ts` (可能需要擴展，支援入點/出點)
 - 大幅改善使用者體驗和工作流程效率
