@@ -1,5 +1,8 @@
-## MODIFIED Requirements
+# ui-layout Specification
 
+## Purpose
+TBD - created by archiving change optimize-ui-layout. Update Purpose after archive.
+## Requirements
 ### Requirement: 整體 UI 佈局
 系統 SHALL 採用左右分欄佈局，左側為預覽區域，右側為片段管理和輸出設定。
 
@@ -76,3 +79,4 @@
 - **THEN** 確保左右分欄比例維持在合理範圍
 - **AND** 設定最小視窗寬度，避免佈局過於擁擠
 - **AND** 表格在空間不足時可以水平滾動（可選）
+
