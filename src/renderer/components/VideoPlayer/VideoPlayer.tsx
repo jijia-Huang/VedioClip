@@ -331,23 +331,24 @@ export function VideoPlayer() {
 
   if (!videoPath) {
     return (
-      <div className="bg-gray-200 rounded-lg p-8 text-center text-gray-500">
+      <div className="bg-gray-800 rounded-lg h-full flex items-center justify-center text-gray-400 border border-gray-700">
         <p>請先載入影片</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-black rounded-lg overflow-hidden">
-      <video
-        ref={videoRef}
-        src={videoPath}
-        className="w-full"
-        style={{ maxHeight: '600px' }}
-      />
+    <div className="bg-black rounded-lg overflow-hidden h-full flex flex-col">
+      <div className="flex-1 flex items-center justify-center min-h-0">
+        <video
+          ref={videoRef}
+          src={videoPath}
+          className="w-full h-full object-contain"
+        />
+      </div>
 
       {/* 播放控制區 */}
-      <div className="bg-gray-900 p-4">
+      <div className="bg-gray-900 p-3 flex-shrink-0">
         {/* 進度條 */}
         <div className="w-full mb-4">
           <div
@@ -392,16 +393,16 @@ export function VideoPlayer() {
 
         {/* 控制按鈕和時間 */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={handlePlayPause}
               disabled={isLoading || !duration || duration === 0}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors text-sm"
             >
-              {isLoading ? '載入中...' : isPlaying ? '停止' : '播放'}
+              {isLoading ? '載入中...' : isPlaying ? '⏸' : '▶'}
             </button>
 
-            <div className="text-white text-sm font-mono">
+            <div className="text-white text-xs font-mono">
               {formatTime(currentTime, true)} / {formatTime(duration, true)}
             </div>
           </div>
