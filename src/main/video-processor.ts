@@ -7,6 +7,8 @@ import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { app } from 'electron';
 import { VideoInfo, ExportFormat, ExportQuality } from '../shared/types';
+import { SUPPORTED_EXTENSIONS } from '../shared/constants';
+import { getBitrateForQuality } from '../shared/constants/quality';
 
 const execAsync = promisify(exec);
 
@@ -137,29 +139,13 @@ function parseFfmpegOutput(output: string): VideoInfo {
  * @returns 是否支援
  */
 export function isSupportedFormat(videoPath: string): boolean {
-  const supportedExtensions = ['.mp4', '.avi', '.mov', '.mkv', '.webm', '.flv'];
   const extension = videoPath
     .toLowerCase()
     .substring(videoPath.lastIndexOf('.'));
-  return supportedExtensions.includes(extension);
+  return (SUPPORTED_EXTENSIONS as readonly string[]).includes(extension);
 }
 
 
-/**
- * 根據品質設定位元率
- */
-function getBitrateForQuality(quality: ExportQuality): number {
-  switch (quality) {
-    case 'high':
-      return 5000; // 5000k
-    case 'medium':
-      return 2500; // 2500k
-    case 'low':
-      return 1000; // 1000k
-    default:
-      return 5000;
-  }
-}
 
 /**
  * 清理檔案名稱（移除無效字元）

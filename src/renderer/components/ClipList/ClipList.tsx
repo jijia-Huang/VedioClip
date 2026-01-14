@@ -1,15 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useClipStore } from '../../stores/clipStore';
+import { useVideoStore } from '../../stores/videoStore';
 import { formatTime } from '../../utils/timeFormat';
-import { ClipEditor } from '../ClipEditor/ClipEditor';
+import { ClipEditor } from '../ClipEditor';
 import { ClipSegment } from '../../../shared/types';
 
 export function ClipList() {
   const segments = useClipStore((state) => state.segments);
   const deleteSegment = useClipStore((state) => state.deleteSegment);
+  const clearSegments = useClipStore((state) => state.clearSegments);
+  const videoPath = useVideoStore((state) => state.videoPath);
+  const seekTo = useVideoStore((state) => state.seekTo);
+  const play = useVideoStore((state) => state.play);
+  const setPreviewSegment = useVideoStore((state) => state.setPreviewSegment);
 
   const [editingSegment, setEditingSegment] = useState<ClipSegment | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // 當影片被清除時，同時清除片段
+  useEffect(() => {
+    if (!videoPath) {
+      clearSegments();
+    }
+  }, [videoPath, clearSegments]);
 
   const handleEdit = (segment: ClipSegment) => {
     setEditingSegment(segment);
@@ -20,6 +33,15 @@ export function ClipList() {
     if (window.confirm('確定要刪除這個片段嗎？')) {
       deleteSegment(id);
     }
+  };
+
+  const handlePreview = (segment: ClipSegment) => {
+    // 設定預覽片段
+    setPreviewSegment(segment);
+    // 跳轉到片段開始時間
+    seekTo(segment.startTime);
+    // 開始播放
+    play();
   };
 
   const handleCloseEditor = () => {
@@ -77,7 +99,7 @@ export function ClipList() {
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   結束
                 </th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-gray-300 uppercase tracking-wider w-24">
+                <th className="px-3 py-2 text-right text-xs font-medium text-gray-300 uppercase tracking-wider w-32">
                   操作
                 </th>
               </tr>
@@ -95,6 +117,13 @@ export function ClipList() {
                   </td>
                   <td className="px-3 py-2 text-right">
                     <div className="flex gap-1 justify-end">
+                      <button
+                        onClick={() => handlePreview(segment)}
+                        className="px-2 py-1 text-xs bg-green-700 text-green-200 rounded hover:bg-green-600 focus:outline-none focus:ring-1 focus:ring-green-500"
+                        title="預覽"
+                      >
+                        預覽
+                      </button>
                       <button
                         onClick={() => handleEdit(segment)}
                         className="px-2 py-1 text-xs bg-gray-700 text-gray-200 rounded hover:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-500"

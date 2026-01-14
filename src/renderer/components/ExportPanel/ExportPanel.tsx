@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useClipStore } from '../../stores/clipStore';
 import { useVideoStore } from '../../stores/videoStore';
-import { ExportSettings, ExportFormat, ExportQuality, ExportProgress, BatchExportResult, ClipSegment } from '../../../shared/types';
+import { exportService, ExportError, DirectorySelectionError } from '../../services';
+import { ExportSettings, ExportFormat, ExportQuality, ExportProgress, BatchExportResult } from '../../../shared/types';
 
 export function ExportPanel() {
   const segments = useClipStore((state) => state.segments);
@@ -17,30 +18,27 @@ export function ExportPanel() {
 
   // 監聽匯出進度
   useEffect(() => {
-    if (!window.electronAPI) return;
+    const cleanup = exportService.onExportProgress((progressData) => {
+      setProgress(progressData);
+    });
 
-    const handleProgress = (progressData: any) => {
-      setProgress(progressData as ExportProgress);
-    };
-
-    window.electronAPI.onExportProgress(handleProgress);
-
-    return () => {
-      window.electronAPI.removeExportProgressListener();
-    };
+    return cleanup;
   }, []);
 
   const handleSelectOutputDir = async () => {
     try {
-      const result = await window.electronAPI.selectExportDir();
-      if (result.success && result.data) {
-        setOutputDir(result.data);
+      const dir = await exportService.selectExportDir();
+      if (dir) {
+        setOutputDir(dir);
         setError(null);
-      } else if (result.error && result.error !== '使用者取消選擇') {
-        setError(result.error);
       }
+      // 使用者取消選擇時，dir 為空字串，不顯示錯誤
     } catch (err) {
-      setError(err instanceof Error ? err.message : '選擇目錄失敗');
+      if (err instanceof DirectorySelectionError) {
+        setError(err.message);
+      } else {
+        setError(err instanceof Error ? err.message : '選擇目錄失敗');
+      }
     }
   };
 
@@ -72,19 +70,14 @@ export function ExportPanel() {
         quality,
       };
 
-      const result = await window.electronAPI.exportClips(
-        videoPath,
-        segments as ClipSegment[],
-        settings
-      ) as { success: boolean; data?: BatchExportResult; error?: string };
-
-      if (result.success && result.data) {
-        setExportResult(result.data);
-      } else {
-        setError(result.error || '匯出失敗');
-      }
+      const result = await exportService.exportClips(videoPath, segments, settings);
+      setExportResult(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '匯出失敗');
+      if (err instanceof ExportError) {
+        setError(err.message);
+      } else {
+        setError(err instanceof Error ? err.message : '匯出失敗');
+      }
     } finally {
       setIsExporting(false);
       setProgress(null);

@@ -2,11 +2,19 @@ import { useState, useEffect } from 'react';
 import { ClipSegment } from '../../../shared/types';
 import { useClipStore } from '../../stores/clipStore';
 import { useVideoStore } from '../../stores/videoStore';
+import { validationService } from '../../services';
 import { TimeInput } from './TimeInput';
 
 interface ClipEditorProps {
   segment?: ClipSegment | null; // 如果提供，則是編輯模式；否則為新增模式
   onClose: () => void;
+}
+
+/**
+ * 生成唯一 ID
+ */
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 export function ClipEditor({ segment, onClose }: ClipEditorProps) {
@@ -37,16 +45,37 @@ export function ClipEditor({ segment, onClose }: ClipEditorProps) {
     e.preventDefault();
     setError(null);
 
-    // 新增或更新片段
-    const result = segment
-      ? updateSegment(segment.id, { name: name.trim(), startTime, endTime })
-      : addSegment({ name: name.trim(), startTime, endTime });
+    // 驗證片段
+    const validation = validationService.validateSegment(
+      { name: name.trim(), startTime, endTime },
+      videoInfo
+    );
 
-    if (result.valid) {
-      onClose();
-    } else {
-      setError(result.error || '驗證失敗');
+    if (!validation.valid) {
+      setError(validation.error || '驗證失敗');
+      return;
     }
+
+    // 新增或更新片段
+    if (segment) {
+      // 編輯模式：更新現有片段
+      updateSegment(segment.id, {
+        id: segment.id,
+        name: name.trim(),
+        startTime,
+        endTime,
+      });
+    } else {
+      // 新增模式：創建新片段
+      addSegment({
+        id: generateId(),
+        name: name.trim(),
+        startTime,
+        endTime,
+      });
+    }
+
+    onClose();
   };
 
   const maxSeconds = videoInfo?.duration || undefined;

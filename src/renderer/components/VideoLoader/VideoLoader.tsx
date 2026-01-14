@@ -1,36 +1,5 @@
 import { useVideoStore } from '../../stores/videoStore';
-
-// 擴展 Window 介面以包含 electronAPI
-declare global {
-  interface Window {
-    electronAPI: {
-      loadVideo: () => Promise<{
-        success: boolean;
-        data?: string;
-        error?: string;
-      }>;
-      getVideoInfo: (path: string) => Promise<{
-        success: boolean;
-        data?: {
-          duration: number;
-          width: number;
-          height: number;
-          format: string;
-          bitrate: number;
-        };
-        error?: string;
-      }>;
-      selectExportDir: () => Promise<{ success: boolean; data?: string; error?: string }>;
-      exportClips: (
-        videoUrl: string,
-        segments: any[],
-        settings: any
-      ) => Promise<{ success: boolean; data?: any; error?: string }>;
-      onExportProgress: (callback: (progress: any) => void) => void;
-      removeExportProgressListener: () => void;
-    };
-  }
-}
+import { videoService, VideoLoadError, VideoInfoError } from '../../services';
 
 export function VideoLoader() {
   const {
@@ -50,33 +19,29 @@ export function VideoLoader() {
       setError(null);
 
       // 載入影片檔案
-      const loadResult = await window.electronAPI.loadVideo();
-
-      if (!loadResult.success || !loadResult.data) {
-        setError(loadResult.error || '載入影片失敗');
-        setLoading(false);
-        return;
-      }
-
-      const videoPath = loadResult.data;
+      const videoPath = await videoService.loadVideo();
       setVideoPath(videoPath);
 
       // 取得影片資訊
-      const infoResult = await window.electronAPI.getVideoInfo(videoPath);
-
-      if (!infoResult.success || !infoResult.data) {
-        setError(infoResult.error || '無法取得影片資訊');
-        setVideoPath(null);
-        setLoading(false);
-        return;
-      }
-
-      setVideoInfo(infoResult.data);
+      const videoInfo = await videoService.getVideoInfo(videoPath);
+      setVideoInfo(videoInfo);
       setLoading(false);
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : '載入影片時發生未知錯誤'
-      );
+      if (error instanceof VideoLoadError || error instanceof VideoInfoError) {
+        setError(error.message);
+        // 如果是載入失敗，清除已設定的路徑
+        if (error instanceof VideoLoadError) {
+          setVideoPath(null);
+        } else {
+          // 如果是資訊獲取失敗，清除路徑
+          setVideoPath(null);
+        }
+      } else {
+        setError(
+          error instanceof Error ? error.message : '載入影片時發生未知錯誤'
+        );
+        setVideoPath(null);
+      }
       setLoading(false);
     }
   };

@@ -23,6 +23,10 @@ export interface ElectronAPI {
   // 匯出進度監聽
   onExportProgress: (callback: (progress: ExportProgress) => void) => void;
   removeExportProgressListener: () => void;
+  
+  // 日誌相關 API
+  log: (level: 'debug' | 'info' | 'warn' | 'error', message: string) => Promise<void>;
+  logError: (params: { message: string; stack?: string; componentStack?: string }) => Promise<void>;
 }
 
 // 透過 contextBridge 暴露 API
@@ -41,4 +45,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeExportProgressListener: () => {
     ipcRenderer.removeAllListeners('export:progress');
   },
+  log: (level: 'debug' | 'info' | 'warn' | 'error', message: string) =>
+    ipcRenderer.invoke('log:write', level, message),
+  logError: (params: { message: string; stack?: string; componentStack?: string }) =>
+    ipcRenderer.invoke('log:error', params),
 } as ElectronAPI);

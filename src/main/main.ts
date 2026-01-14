@@ -3,6 +3,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { registerIpcHandlers } from './ipc-handlers';
 import { initializeFFmpeg } from './video-processor';
+import { initializeLogger } from './utils/logger';
 
 // 在 ES 模組中定義 __dirname
 function getDirname() {
@@ -58,6 +59,9 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // 初始化日誌系統
+  initializeLogger();
+  
   // 初始化 FFmpeg 路徑
   initializeFFmpeg();
   

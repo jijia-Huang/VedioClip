@@ -4,6 +4,9 @@ import { IpcResponse, VideoInfo, ClipSegment, ExportSettings, ExportProgress, Ba
 import { pathToFileURL } from 'url';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { fileUrlToPath } from './utils/pathUtils';
+import { FILE_DIALOG_EXTENSIONS } from '../shared/constants';
+import { log } from './utils/logger';
 
 /**
  * IPC 處理器
@@ -20,7 +23,7 @@ export function registerIpcHandlers() {
         filters: [
           {
             name: '影片檔案',
-            extensions: ['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv'],
+            extensions: [...FILE_DIALOG_EXTENSIONS],
           },
         ],
       });
@@ -64,16 +67,7 @@ export function registerIpcHandlers() {
     async (_event, videoUrl: string): Promise<IpcResponse<VideoInfo>> => {
       try {
         // 將 file:// URL 轉換回檔案路徑
-        const urlObj = new URL(videoUrl);
-        let videoPath: string;
-        
-        if (process.platform === 'win32') {
-          // Windows: file:///C:/path/to/file -> C:/path/to/file
-          videoPath = decodeURIComponent(urlObj.pathname.substring(1));
-        } else {
-          // Unix: file:///path/to/file -> /path/to/file
-          videoPath = decodeURIComponent(urlObj.pathname);
-        }
+        const videoPath = fileUrlToPath(videoUrl);
         
         const videoInfo = await getVideoInfo(videoPath);
         return {
@@ -100,14 +94,7 @@ export function registerIpcHandlers() {
     ): Promise<IpcResponse<BatchExportResult>> => {
       try {
         // 將 file:// URL 轉換回檔案路徑
-        const urlObj = new URL(videoUrl);
-        let videoPath: string;
-        
-        if (process.platform === 'win32') {
-          videoPath = decodeURIComponent(urlObj.pathname.substring(1));
-        } else {
-          videoPath = decodeURIComponent(urlObj.pathname);
-        }
+        const videoPath = fileUrlToPath(videoUrl);
 
         // 驗證影片檔案存在
         if (!existsSync(videoPath)) {
@@ -237,6 +224,38 @@ export function registerIpcHandlers() {
         success: false,
         error: error instanceof Error ? error.message : '未知錯誤',
       };
+    }
+  });
+
+  // 日誌處理器
+  ipcMain.handle('log:write', async (_event, level: 'debug' | 'info' | 'warn' | 'error', message: string) => {
+    try {
+      switch (level) {
+        case 'debug':
+          log.debug(message);
+          break;
+        case 'info':
+          log.info(message);
+          break;
+        case 'warn':
+          log.warn(message);
+          break;
+        case 'error':
+          log.error(message);
+          break;
+      }
+    } catch (error) {
+      // 如果日誌記錄失敗，至少輸出到控制台
+      console.error('日誌記錄失敗:', error);
+    }
+  });
+
+  ipcMain.handle('log:error', async (_event, params: { message: string; stack?: string; componentStack?: string }) => {
+    try {
+      const errorMessage = `錯誤: ${params.message}${params.stack ? `\n堆疊: ${params.stack}` : ''}${params.componentStack ? `\n組件堆疊: ${params.componentStack}` : ''}`;
+      log.error(errorMessage);
+    } catch (error) {
+      console.error('錯誤日誌記錄失敗:', error);
     }
   });
 }

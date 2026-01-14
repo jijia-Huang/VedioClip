@@ -47,7 +47,7 @@ TBD - created by archiving change optimize-ui-layout. Update Purpose after archi
 - **WHEN** 存在一個或多個片段
 - **THEN** 顯示表格形式的片段列表
 - **AND** 表格包含列：編號、名稱、開始時間、結束時間、操作
-- **AND** 每個片段顯示編輯和刪除按鈕
+- **AND** 每個片段顯示「預覽」、編輯和刪除按鈕
 - **AND** 表格可以隨視窗高度延伸（可滾動）
 
 #### Scenario: 新增片段按鈕
