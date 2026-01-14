@@ -44,8 +44,10 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     // 生產模式下載入建置後的檔案
+    // 在打包後，__dirname 會指向 app.asar 內的主進程檔案位置
+    // HTML 檔案在 app.asar/dist/index.html（相對於主進程檔案）
     const htmlPath = app.isPackaged
-      ? join(__dirname, '../renderer/index.html')
+      ? join(__dirname, '../dist/index.html')
       : join(__dirname, '../dist/index.html');
     mainWindow.loadFile(htmlPath);
   }

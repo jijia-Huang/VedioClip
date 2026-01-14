@@ -25,9 +25,10 @@ function setupFFmpegPaths() {
   
   if (app.isPackaged) {
     // 打包後的路徑：從 resources 目錄讀取
-    const resourcesPath = process.resourcesPath || app.getAppPath();
-    ffmpegPath = join(resourcesPath, 'resources', 'ffmpeg.exe');
-    ffprobePath = join(resourcesPath, 'resources', 'ffprobe.exe');
+    // process.resourcesPath 已經指向 resources 目錄（例如：.../resources）
+    const resourcesPath = process.resourcesPath || join(dirname(process.execPath), 'resources');
+    ffmpegPath = join(resourcesPath, 'ffmpeg.exe');
+    ffprobePath = join(resourcesPath, 'ffprobe.exe');
   } else {
     // 開發模式：使用 node_modules 中的安裝器
     try {
