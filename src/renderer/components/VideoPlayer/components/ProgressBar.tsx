@@ -6,7 +6,6 @@ interface TimelineRange {
 
 interface ProgressBarProps {
   currentTime: number;
-  duration: number;
   timelineRange: TimelineRange;
   progressPercentage: number;
   onSeek: (e: React.ChangeEvent<HTMLInputElement>) => void;
