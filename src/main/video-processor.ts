@@ -1,4 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { existsSync } from 'fs';
 import { dirname, extname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -6,53 +8,49 @@ import { createRequire } from 'module';
 import { app } from 'electron';
 import { VideoInfo, ExportFormat, ExportQuality } from '../shared/types';
 
+const execAsync = promisify(exec);
+
 /**
  * 影片處理器
  * 使用 FFmpeg 處理影片相關操作
  */
 
-// 在 ES 模組中定義 __dirname（fluent-ffmpeg 內部可能需要）
-// 使用 globalThis 確保在運行時可用
+// 在 ES 模組中定義 __dirname
 if (typeof globalThis.__dirname === 'undefined') {
   const __filename = fileURLToPath(import.meta.url);
   globalThis.__dirname = dirname(__filename);
 }
 
-// 設定 FFmpeg 和 FFprobe 路徑
+// 保存 ffmpeg 路徑供直接調用
+let globalFfmpegPath: string = 'ffmpeg';
+
+// 設定 FFmpeg 路徑
 function setupFFmpegPaths() {
   let ffmpegPath: string;
-  let ffprobePath: string;
   
   if (app.isPackaged) {
     // 打包後的路徑：從 resources 目錄讀取
-    // process.resourcesPath 已經指向 resources 目錄（例如：.../resources）
     const resourcesPath = process.resourcesPath || join(dirname(process.execPath), 'resources');
     ffmpegPath = join(resourcesPath, 'ffmpeg.exe');
-    ffprobePath = join(resourcesPath, 'ffprobe.exe');
   } else {
     // 開發模式：使用 node_modules 中的安裝器
     try {
       const require = createRequire(import.meta.url);
       const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
-      const ffprobeInstaller = require('@ffprobe-installer/ffprobe');
       ffmpegPath = ffmpegInstaller.path;
-      ffprobePath = ffprobeInstaller.path;
     } catch (error) {
-      console.warn('無法載入 FFmpeg/FFprobe 安裝器:', error);
-      // 回退到系統安裝的版本
+      console.warn('無法載入 FFmpeg 安裝器:', error);
       ffmpegPath = 'ffmpeg';
-      ffprobePath = 'ffprobe';
     }
   }
   
+  globalFfmpegPath = ffmpegPath;
   ffmpeg.setFfmpegPath(ffmpegPath);
-  ffmpeg.setFfprobePath(ffprobePath);
   
   console.log('FFmpeg 路徑:', ffmpegPath);
-  console.log('FFprobe 路徑:', ffprobePath);
 }
 
-// 在 app ready 後初始化（在 main.ts 中調用）
+// 在 app ready 後初始化
 export function initializeFFmpeg() {
   try {
     setupFFmpegPaths();
@@ -65,51 +63,72 @@ export function initializeFFmpeg() {
  * 取得影片資訊
  * @param videoPath 影片檔案路徑
  * @returns 影片資訊
- * @throws 當檔案不存在或無法讀取時拋出錯誤
  */
 export async function getVideoInfo(videoPath: string): Promise<VideoInfo> {
-  // 驗證檔案存在
   if (!existsSync(videoPath)) {
     throw new Error(`影片檔案不存在: ${videoPath}`);
   }
 
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(videoPath, (err, metadata) => {
-      if (err) {
-        reject(new Error(`無法讀取影片資訊: ${err.message}`));
-        return;
-      }
+  try {
+    // 使用 ffmpeg -i 取得資訊，它會輸出到 stderr
+    // 使用雙引號包裹路徑以處理空格
+    const { stderr } = await execAsync(`"${globalFfmpegPath}" -i "${videoPath}"`);
+    return parseFfmpegOutput(stderr);
+  } catch (error: any) {
+    // ffmpeg -i 如果沒有輸出檔案通常會回傳 exit code 1，這是正常的
+    if (error.stderr) {
+      return parseFfmpegOutput(error.stderr);
+    }
+    throw new Error(`無法讀取影片資訊: ${error.message}`);
+  }
+}
 
-      // 取得影片串流資訊
-      const videoStream = metadata.streams?.find(
-        (stream) => stream.codec_type === 'video'
-      );
+/**
+ * 解析 FFmpeg 輸出文字
+ */
+function parseFfmpegOutput(output: string): VideoInfo {
+  const info: VideoInfo = {
+    duration: 0,
+    width: 0,
+    height: 0,
+    format: 'unknown',
+    bitrate: 0
+  };
 
-      if (!videoStream) {
-        reject(new Error('無法找到影片串流'));
-        return;
-      }
+  // 1. 解析時長 Duration: 00:00:05.12
+  const durationMatch = output.match(/Duration: (\d{2}):(\d{2}):(\d{2})\.(\d{2})/);
+  if (durationMatch) {
+    const hours = parseInt(durationMatch[1], 10);
+    const minutes = parseInt(durationMatch[2], 10);
+    const seconds = parseInt(durationMatch[3], 10);
+    const centiseconds = parseInt(durationMatch[4], 10);
+    info.duration = hours * 3600 + minutes * 60 + seconds + centiseconds / 100;
+  }
 
-      // 解析影片資訊
-      const videoInfo: VideoInfo = {
-        duration: metadata.format.duration || 0,
-        width: videoStream.width || 0,
-        height: videoStream.height || 0,
-        format: metadata.format.format_name || 'unknown',
-        bitrate: metadata.format.bit_rate
-          ? parseInt(String(metadata.format.bit_rate), 10)
-          : 0,
-      };
+  // 2. 解析解析度 1920x1080
+  const videoMatch = output.match(/Video:.* (\d{2,5})x(\d{2,5})/);
+  if (videoMatch) {
+    info.width = parseInt(videoMatch[1], 10);
+    info.height = parseInt(videoMatch[2], 10);
+  }
 
-      // 驗證基本資訊
-      if (videoInfo.duration === 0) {
-        reject(new Error('無法取得影片時長'));
-        return;
-      }
+  // 3. 解析格式
+  const formatMatch = output.match(/Input #0, ([^,]+),/);
+  if (formatMatch) {
+    info.format = formatMatch[1];
+  }
 
-      resolve(videoInfo);
-    });
-  });
+  // 4. 解析位元率 bitrate: 2265 kb/s
+  const bitrateMatch = output.match(/bitrate: (\d+) kb\/s/);
+  if (bitrateMatch) {
+    info.bitrate = parseInt(bitrateMatch[1], 10) * 1000;
+  }
+
+  if (info.duration === 0) {
+    throw new Error('無法從 FFmpeg 輸出中解析影片資訊');
+  }
+
+  return info;
 }
 
 /**

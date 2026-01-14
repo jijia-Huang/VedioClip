@@ -12,15 +12,13 @@
     "package": "electron-builder",
     "preview": "vite preview"
   },
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@ffprobe-installer/ffprobe": "^2.1.2",
     "fluent-ffmpeg": "^2.1.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zustand": "^4.4.0"
-  },
-  "devDependencies": {
+    "zustand": "^4.4.0",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
@@ -38,6 +36,8 @@
   "build": {
     "appId": "com.vedioclip.app",
     "productName": "VedioClip",
+    "compression": "maximum",
+    "asar": true,
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -45,16 +45,13 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*",
-      "package.json"
+      "package.json",
+      "!**/*.map"
     ],
     "extraFiles": [
       {
         "from": "node_modules/@ffmpeg-installer/win32-x64/ffmpeg.exe",
         "to": "resources/ffmpeg.exe"
-      },
-      {
-        "from": "node_modules/@ffprobe-installer/win32-x64/ffprobe.exe",
-        "to": "resources/ffprobe.exe"
       }
     ],
     "win": {
@@ -65,13 +62,20 @@
             "x64"
           ]
         }
+      ],
+      "files": [
+        "**/*",
+        "!locales/*",
+        "locales/zh-TW.pak",
+        "locales/en-US.pak"
       ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "differentialPackage": false
     }
   }
 }

@@ -78,9 +78,9 @@ export function TimeInput({ value, onChange, label, maxSeconds }: TimeInputProps
 
     // 確保所有值都不為負數
     minutes = Math.max(0, minutes);
-    // 如果分鐘為0且總時間小於60秒，秒數可以超過59
+    // 判斷是否顯示分鐘：當前時間已超過 1 分鐘，或者影片總長度超過 1 分鐘
     const totalSecondsCheck = combineToSeconds(minutes, seconds, centiseconds);
-    const shouldShowMinutes = totalSecondsCheck >= 60 || minutes > 0;
+    const shouldShowMinutes = totalSecondsCheck >= 60 || minutes > 0 || (maxSeconds !== undefined && maxSeconds >= 60);
     seconds = Math.max(0, shouldShowMinutes ? Math.min(59, seconds) : seconds);
     centiseconds = Math.max(0, Math.min(99, centiseconds));
 
@@ -125,7 +125,7 @@ export function TimeInput({ value, onChange, label, maxSeconds }: TimeInputProps
     
     // 計算當前總秒數，判斷是否需要顯示分鐘
     const currentTotalSeconds = combineToSeconds(timeParts.minutes, timeParts.seconds, timeParts.centiseconds);
-    const showMinutes = currentTotalSeconds >= 60 || timeParts.minutes > 0;
+    const showMinutes = currentTotalSeconds >= 60 || timeParts.minutes > 0 || (maxSeconds !== undefined && maxSeconds >= 60);
     
     // 設定最大值限制
     // 如果不顯示分鐘，秒數可以超過59（因為它實際上包含了分鐘的部分）
@@ -138,9 +138,9 @@ export function TimeInput({ value, onChange, label, maxSeconds }: TimeInputProps
     });
   };
 
-  // 判斷是否需要顯示分鐘欄位（總時間小於60秒時不顯示）
+  // 判斷是否需要顯示分鐘欄位（當前時間超過 1 分鐘，或影片總長度超過 1 分鐘時顯示）
   const totalSeconds = combineToSeconds(timeParts.minutes, timeParts.seconds, timeParts.centiseconds);
-  const showMinutes = totalSeconds >= 60 || timeParts.minutes > 0;
+  const showMinutes = totalSeconds >= 60 || timeParts.minutes > 0 || (maxSeconds !== undefined && maxSeconds >= 60);
 
   return (
     <div>

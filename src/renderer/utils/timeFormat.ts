@@ -26,10 +26,6 @@ export function formatTime(seconds: number, showMilliseconds: boolean = false): 
     if (hours > 0) {
       return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
     }
-    // 如果小於一分鐘，只顯示秒和毫秒
-    if (totalSeconds < 60) {
-      return `${secs}.${String(ms).padStart(2, '0')}`;
-    }
     return `${minutes}:${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
   }
 
