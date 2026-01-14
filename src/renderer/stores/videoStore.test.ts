@@ -28,7 +28,6 @@ describe('videoStore', () => {
       height: 1080,
       bitrate: 5000000,
       format: 'mp4',
-      size: 100000000,
     };
     
     store.setVideoInfo(videoInfo);

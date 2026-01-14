@@ -17,7 +17,7 @@ export function StatusBar() {
     <footer className="bg-gray-800 text-gray-300 px-6 py-2 text-sm border-t border-gray-700">
       <div className="flex items-center justify-between">
         <span>狀態: {getStatus()}</span>
-        <span className="text-gray-400">VedioClip v0.1.0</span>
+        <span className="text-gray-400">VedioClip v{__APP_VERSION__}</span>
       </div>
     </footer>
   );
